@@ -31,11 +31,27 @@ class UserStats:
             print('> 🍅 Tomato Seed is now unlocked. You received 5 tomato seeds.')
 
             return
+        
+        if self.day >= 12 and inventory.list['Coin']['quantity'] > 1500 and inventory.list['Corn']['quantity'] >= 15 and inventory.list['Potato']['quantity'] >= 10 and inventory.list['Tomato']['quantity'] >= 5:
+            seeds.list['Carrot Seed']['unlocked'] = True
+            inventory.list['Carrot Seed']['quantity'] = 5
+            market_items.list['Carrot Seed']['unlocked'] = True
+
+            print('> 🥳 Congratulations! You have reached the following conditions:')
+            print('\t- You have passed day 12.')
+            print('\t- You have more than 1500 🪙')
+            print('\t- You have at least 15 corns in your inventory 🌽')
+            print('\t- You have at least 10 potatoes in your inventory 🥔')
+            print('\t- You have at least 5 tomatoes in your inventory 🍅')
+            print('> 🥕 Carrot Seed is now unlocked. You received 5 carrot seeds.')
+
+            return
 # === End of UserStats Class ===
 
 # === Start of Inventory Class ===
 class Inventory:
     def __init__(self):
+        
         self.list = {
             'Coin': {
                 'quantity': 1000,
