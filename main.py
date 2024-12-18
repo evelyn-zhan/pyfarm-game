@@ -902,6 +902,21 @@ def show_inventory():
     print('-' * 80)
 # === End of Show Inventory Function ===
 
+# === Start of Statistics Menu ===
+def statistics():
+    print('-' * 80)
+    print(f'{'📊 Statistics 📊':^80}')
+    print('-' * 80)
+    
+    print(f'> 🌞 You have reached Day {stats.day}')
+    print(f'> 🪙 You currently have {inventory.list['Coin']['quantity']} coins.')
+    print(f'> 🌽 The size of your farm is now {farm.size} x {farm.size}.')
+    print(f'> 🐔 You own {len(chicken_barn.animals)} chicken(s).')
+    print(f'> 🐄 You own {len(cow_barn.animals)} cow(s).')
+
+    print('-' * 80)
+# === End of Statistics Menu ===
+
 if __name__ == '__main__':
     while True:
         cls()
@@ -937,6 +952,8 @@ if __name__ == '__main__':
             market_menu()
         elif choice == '5':
             show_inventory()
+        elif choice == '6':
+            statistics()
         elif choice == '7':
             print('> Thank you for playing 🎉\n')
             break
