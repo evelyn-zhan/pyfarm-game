@@ -18,32 +18,43 @@ class UserStats:
 
             print('> 🥳 Congratulations! You have reached Day 4.')
             print('> 🥔 Potato Seed is now unlocked. You received 5 potato seeds.')
+            print('-' * 80)
 
             return
         
-        if self.day >= 8 and inventory.list['Coin']['quantity'] > 1100:
+        if self.day == 6:
+            market_items.list['Cow']['unlocked'] = True
+
+            print('> 🥳 Congratulations! You have reached Day 10.')
+            print('> 🐮 Cow is now unlocked. You can buy them at the market.')
+            print('-' * 80)
+
+            return
+        
+        if inventory.list['Coin']['quantity'] > 1100 and seeds.list['Tomato Seed']['unlocked'] is False:
             seeds.list['Tomato Seed']['unlocked'] = True
             inventory.list['Tomato Seed']['quantity'] = 5
             market_items.list['Tomato Seed']['unlocked'] = True
 
-            print('> 🥳 Congratulations! You have passed Day 8 and got more than 1100 🪙.')
+            print('> 🥳 Congratulations! You have got more than 1100 🪙.')
             print('> 😄 For this achievement, you will receive Tomato Seed!')
             print('> 🍅 Tomato Seed is now unlocked. You received 5 tomato seeds.')
+            print('-' * 80)
 
             return
         
-        if self.day >= 12 and inventory.list['Coin']['quantity'] > 1500 and inventory.list['Corn']['quantity'] >= 15 and inventory.list['Potato']['quantity'] >= 10 and inventory.list['Tomato']['quantity'] >= 5:
+        if inventory.list['Coin']['quantity'] > 1500 and inventory.list['Corn']['quantity'] >= 15 and inventory.list['Potato']['quantity'] >= 10 and inventory.list['Tomato']['quantity'] >= 5 and seeds.list['Carrot Seed']['unlocked'] is False:
             seeds.list['Carrot Seed']['unlocked'] = True
             inventory.list['Carrot Seed']['quantity'] = 5
             market_items.list['Carrot Seed']['unlocked'] = True
 
             print('> 🥳 Congratulations! You have reached the following conditions:')
-            print('\t- You have passed day 12.')
             print('\t- You have more than 1500 🪙')
             print('\t- You have at least 15 corns in your inventory 🌽')
             print('\t- You have at least 10 potatoes in your inventory 🥔')
             print('\t- You have at least 5 tomatoes in your inventory 🍅')
             print('> 🥕 Carrot Seed is now unlocked. You received 5 carrot seeds.')
+            print('-' * 80)
 
             return
 # === End of UserStats Class ===
@@ -230,6 +241,78 @@ class Seeds:
         print()
 # === End of Seeds Class ===
 
+# === Start of Barn Class ===
+class Barn:
+    def __init__(self):
+        self.animals = []
+    
+    def add_animal(self, animal):
+        self.animals.append(animal)
+    
+    def feed_animals(self):
+        for animal in self.animals:
+            if animal.feeded == True: continue
+            animal.feeded = True
+            animal.feeded_days += 1
+            if animal.health + 10 <= 100: animal.health += 10
+            else: animal.health = 100
+    
+    def update_status(self):
+        dead = 0
+        for animal in self.animals:
+            if animal.feeded == False:
+                animal.feeded_days = 0
+                if animal.health - 20 >= 0: animal.health -= 20
+                else:
+                    self.animals.remove(animal)
+                    dead += 1
+            else: animal.feeded = False
+        return dead
+# === End of Barn Class ===
+
+# === Start of Chicken Barn Class ===
+class ChickenBarn(Barn):
+    def __init__(self):
+        super().__init__()
+    
+    def show_chickens(self):
+        if len(self.animals) == 0:
+            print('> 🐔 There are no chickens in the chicken barn...')
+            print('-' * 80)
+            return
+        
+        print('> 🐔 List of chickens in the chicken barn:')
+        print('-' * 80)
+
+        for animal in self.animals:
+            print(f'> 🐤 Name: {animal.name}')
+            print(f'> ⏳ Age: {animal.age}')
+            print(f'> ❤️ Health: {animal.health}')
+            print(f'> 🍚 Feeded Today: {'Yes' if animal.feeded == True else 'No'}')
+            print(f'> 🍚 Feeded Streak: {animal.feeded_days} day(s)')
+            print('-' * 80)
+    
+    def collect_egg(self):
+        egg = 0
+        for animal in self.animals:
+            if animal.feeded_days > 3:
+                egg += 1
+                if animal.feeded == True: animal.feeded_days = 1
+                else: animal.feeded_days = 0
+        inventory.list['Egg']['quantity'] += egg
+        return egg
+# === End of Chicken Barn Class ===
+
+# === Start of Chicken Class === 
+class Chicken:
+    def __init__(self, name):
+        self.name = name
+        self.age = 0
+        self.health = 100
+        self.feeded = False
+        self.feeded_days = 0
+# === End of Chicken Class
+
 # === Start of Market Item Class ===
 class MarketItems:
     def __init__(self):
@@ -262,7 +345,7 @@ class MarketItems:
             'Cow': {
                 'icon': '🐄',
                 'price': 180,
-                'unlocked': True
+                'unlocked': False
             }
         }
 # === End of Market Item Class ===
@@ -303,14 +386,19 @@ class Buy:
         for item_name in market_items.list:
             item = market_items.list[item_name]
             if item['unlocked'] == False: continue
+            
             count += 1
+            
             if count == index:
                 if quantity * item['price'] > inventory.list['Coin']['quantity']:
                     print('> ❗ Not enough coins!\n')
                     return
                 
                 inventory.list['Coin']['quantity'] -= quantity * item['price']
-                inventory.list[item_name]['quantity'] += quantity
+                
+                if item_name == 'Chicken' or item_name == 'Cow':
+                    for i in range(quantity): buy_animal(item_name)
+                else: inventory.list[item_name]['quantity'] += quantity
 
                 print('-' * 80)
                 print(f'> 🪙 You have bought {quantity} {item_name}!')
@@ -335,6 +423,9 @@ inventory = Inventory()
 # Farm Instances
 farm = Farm()
 seeds = Seeds()
+
+# Barn Instances
+chicken_barn = ChickenBarn()
 
 # Market Instances
 market = Market()
@@ -508,14 +599,127 @@ def farm_harvest_menu():
     print('-' * 80)
 # === End of Farm Harvest Menu ===
 
+# === Start of Barn Menu ===
+def barn_menu():
+    print('-' * 80)
+    print(f'{'🐮🐔 Barn 🐔🐮':^80}')
+    print('-' * 80)
+
+    print('1. Chicken Barn 🐔')
+    print('2. Cow Barn 🐮')
+    print('3. Back to Main Menu 👈')
+
+    print('-' * 80)
+
+    choice = input('> Enter menu number: ')
+
+    if choice not in ['1', '2', '3']:
+        print('> ❗ Invalid option!\n')
+        return
+    
+    if choice in ['1', '2']: cls()
+    
+    if choice == '1': chicken_barn_menu()
+    elif choice == '2': cow_barn_menu()
+    else:
+        print('-' * 80)
+        return
+# === End of Barn Menu ===
+
+# === Start of Chicken Barn Menu ===
+def chicken_barn_menu():
+    print('-' * 80)
+    print(f'{'🐔 Chicken Barn 🐔':^80}')
+    print('-' * 80)
+
+    chicken_barn.show_chickens()
+
+    if len(chicken_barn.animals) == 0: return
+
+    print('1. Feed Chicken 🍚')
+    print('2. Collect Egg 🥚')
+    print('3. Go back to Main Menu 👈')
+
+    print('-' * 80)
+
+    valid = False
+
+    while valid is False:
+        choice = input('> Enter menu number: ')
+        try:
+            if choice not in ['1', '2', '3']:
+                raise ValueError('> ❗ Invalid option!\n')
+            valid = True
+        except ValueError as e:
+            print(str(e))
+    
+    if choice == '1':
+        chicken_barn.feed_animals()
+        print('-' * 80)
+        print('> 🍚 Chicken feeded!')
+        print('-' * 80)
+    elif choice == '2':
+        egg = chicken_barn.collect_egg()
+        print('-' * 80)
+        if egg == 0: print('> 🥚 There are no eggs that are ready to be collected...')
+        else: print(f'> 🥚 You collected {egg} eggs!')
+        print('-' * 80)
+    else:
+        print('-' * 80)
+        return
+# === End of Chicken Barn Menu ===
+
+# === Start of Buy Animal Menu ===
+def buy_animal(animal):
+    print('-' * 80)
+
+    if animal == 'Chicken': icon = '🐔'
+    elif animal == 'Cow': icon = '🐮'
+
+    print(f'> {icon}')
+
+    valid = False
+
+    while valid == False:
+        name = input(f'> Enter name for {animal}: ')
+
+        try:
+            if name == '': raise ValueError('> ❗ Name may not be empty!\n')
+
+            space = 0
+            
+            for character in name:
+                if character not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ': raise ValueError('> ❗ Invalid name!\n')
+                if character == ' ': space += 1
+
+            if space == len(name): raise ValueError('> ❗ Invalid name!\n')
+
+            valid = True
+
+        except ValueError as e:
+            print(str(e))
+    
+    if animal == 'Chicken':
+        chicken_barn.add_animal(Chicken(name))
+    elif animal == 'Cow':
+        cow_barn.add_animal(Cow(name))
+# === End of Buy Animal Menu ===
+
 # === Start of End Day Function ===
 def end_day():
     print(f'\n> 🌙 End of Day {stats.day}')
     stats.next_day()
     print(f'> 🌞 Start of Day {stats.day}')
-    farm.update_field()
-    stats.check_progress()
     print('-' * 80)
+
+    farm.update_field()
+
+    stats.check_progress()
+
+    dead_chicken = chicken_barn.update_status()
+    if dead_chicken > 0:
+        print(f'> 🐔 Oh, no! {dead_chicken} chicken(s) died today. Remember to feed your animals!')
+        print('-' * 80)
 # === End of End Day Function ===
 
 # === Start of Market Menu ===
@@ -534,7 +738,6 @@ def market_menu():
 
     while valid is False:
         choice = input('> Enter menu number: ')
-
         try:
             if choice not in ['1', '2', '3']:
                 raise ValueError('> ❗ Invalid option!\n')
@@ -634,6 +837,8 @@ if __name__ == '__main__':
 
         if choice == '1':
             farm_menu()
+        elif choice == '2':
+            barn_menu()
         elif choice == '3':
             end_day()
         elif choice == '4':
@@ -644,6 +849,6 @@ if __name__ == '__main__':
             print('> Thank you for playing 🎉\n')
             break
         else:
-            print('Invalid option!')
+            print('> ❗ Invalid option!')
         
         input('> Press any key to continue...')
