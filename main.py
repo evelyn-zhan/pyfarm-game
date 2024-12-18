@@ -25,7 +25,7 @@ class UserStats:
         if self.day == 6:
             market_items.list['Cow']['unlocked'] = True
 
-            print('> 🥳 Congratulations! You have reached Day 10.')
+            print('> 🥳 Congratulations! You have reached Day 6.')
             print('> 🐮 Cow is now unlocked. You can buy them at the market.')
             print('-' * 80)
 
@@ -303,6 +303,39 @@ class ChickenBarn(Barn):
         return egg
 # === End of Chicken Barn Class ===
 
+# === Start of Cow Barn Class ===
+class CowBarn(Barn):
+    def __init__(self):
+        super().__init__()
+    
+    def show_cows(self):
+        if len(self.animals) == 0:
+            print('> 🐄 There are no cows in the cow barn...')
+            print('-' * 80)
+            return
+        
+        print('> 🐄 List of cows in the cow barn:')
+        print('-' * 80)
+
+        for animal in self.animals:
+            print(f'> 🐮 Name: {animal.name}')
+            print(f'> ⏳ Age: {animal.age}')
+            print(f'> ❤️ Health: {animal.health}')
+            print(f'> 🍚 Feeded Today: {'Yes' if animal.feeded == True else 'No'}')
+            print(f'> 🍚 Feeded Streak: {animal.feeded_days} day(s)')
+            print('-' * 80)
+        
+    def collect_milk(self):
+        milk = 0
+        for animal in self.animals:
+            if animal.feeded_days > 3:
+                milk += 1
+                if animal.feeded == True: animal.feeded_days = 1
+                else: animal.feeded_days = 0
+        inventory.list['Milk']['quantity'] += milk
+        return milk
+# === End of Cow Barn Class ===
+
 # === Start of Chicken Class === 
 class Chicken:
     def __init__(self, name):
@@ -311,7 +344,17 @@ class Chicken:
         self.health = 100
         self.feeded = False
         self.feeded_days = 0
-# === End of Chicken Class
+# === End of Chicken Class ===
+
+# === Start of Cow Class ===
+class Cow:
+    def __init__(self, name):
+        self.name = name
+        self.age = 0
+        self.health = 100
+        self.feeded = False
+        self.feeded_days = 0
+# === End of Cow Class ===
 
 # === Start of Market Item Class ===
 class MarketItems:
@@ -426,6 +469,7 @@ seeds = Seeds()
 
 # Barn Instances
 chicken_barn = ChickenBarn()
+cow_barn = CowBarn()
 
 # Market Instances
 market = Market()
@@ -669,6 +713,49 @@ def chicken_barn_menu():
         return
 # === End of Chicken Barn Menu ===
 
+# === Start of Cow Barn Menu ===
+def cow_barn_menu():
+    print('-' * 80)
+    print(f'{'🐮 Cow Barn 🐮':^80}')
+    print('-' * 80)
+
+    cow_barn.show_cows()
+
+    if len(cow_barn.animals) == 0: return
+
+    print('1. Feed Cow 🍚')
+    print('2. Collect Milk 🥛')
+    print('3. Go back to Main Menu 👈')
+
+    print('-' * 80)
+
+    valid = False
+
+    while valid is False:
+        choice = input('> Enter menu number: ')
+        try:
+            if choice not in ['1', '2', '3']:
+                raise ValueError('> ❗ Invalid option!\n')
+            valid = True
+        except ValueError as e:
+            print(str(e))
+    
+    if choice == '1':
+        cow_barn.feed_animals()
+        print('-' * 80)
+        print('> 🍚 Cow feeded!')
+        print('-' * 80)
+    elif choice == '2':
+        milk = cow_barn.collect_milk()
+        print('-' * 80)
+        if milk == 0: print('> 🥛 There are no milk that are ready to be collected...')
+        else: print(f'> 🥛 You collected {milk} milk!')
+        print('-' * 80)
+    else:
+        print('-' * 80)
+        return
+# === End of Cow Barn Menu ===
+
 # === Start of Buy Animal Menu ===
 def buy_animal(animal):
     print('-' * 80)
@@ -719,6 +806,11 @@ def end_day():
     dead_chicken = chicken_barn.update_status()
     if dead_chicken > 0:
         print(f'> 🐔 Oh, no! {dead_chicken} chicken(s) died today. Remember to feed your animals!')
+        print('-' * 80)
+    
+    dead_cow = cow_barn.update_status()
+    if dead_cow > 0:
+        print(f'> 🐄 Oh, no! {dead_cow} cow(s) died today. Remember to feed your animals!')
         print('-' * 80)
 # === End of End Day Function ===
 
