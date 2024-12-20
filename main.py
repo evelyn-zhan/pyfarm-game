@@ -1,4 +1,5 @@
 import os
+import random
 
 def cls(): os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -6,15 +7,27 @@ def cls(): os.system('cls' if os.name == 'nt' else 'clear')
 class UserStats:
     def __init__(self):
         self.day = 1
+        self.financial = {
+            1: {
+                'Profit': 0,
+                'Expense': 0
+            }
+        }
     
     def next_day(self):
         self.day += 1
+        self.financial[self.day] = {
+            'Profit': 0,
+            'Expense': 0
+        }
+        market.sell.update_prices()
     
     def check_progress(self):
         if self.day == 4:
             seeds.list['Potato Seed']['unlocked'] = True
             inventory.list['Potato Seed']['quantity'] = 5
             market_items.list['Potato Seed']['unlocked'] = True
+            market.sell.list['Potato']['unlocked'] = True
 
             print('> 🥳 Congratulations! You have reached Day 4.')
             print('> 🥔 Potato Seed is now unlocked. You received 5 potato seeds.')
@@ -24,6 +37,7 @@ class UserStats:
         
         if self.day == 6:
             market_items.list['Cow']['unlocked'] = True
+            market.sell.list['Cow']['unlocked'] = True
 
             print('> 🥳 Congratulations! You have reached Day 6.')
             print('> 🐮 Cow is now unlocked. You can buy them at the market.')
@@ -35,6 +49,7 @@ class UserStats:
             seeds.list['Tomato Seed']['unlocked'] = True
             inventory.list['Tomato Seed']['quantity'] = 5
             market_items.list['Tomato Seed']['unlocked'] = True
+            market.sell.list['Tomato']['unlocked'] = True
 
             print('> 🥳 Congratulations! You have got more than 1100 🪙.')
             print('> 😄 For this achievement, you will receive Tomato Seed!')
@@ -47,6 +62,7 @@ class UserStats:
             seeds.list['Carrot Seed']['unlocked'] = True
             inventory.list['Carrot Seed']['quantity'] = 5
             market_items.list['Carrot Seed']['unlocked'] = True
+            market.sell.list['Carrot']['unlocked'] = True
 
             print('> 🥳 Congratulations! You have reached the following conditions:')
             print('\t- You have more than 1500 🪙')
@@ -256,6 +272,7 @@ class Barn:
             animal.feeded_days += 1
             if animal.health + 10 <= 100: animal.health += 10
             else: animal.health = 100
+            if animal.feeded_days >= 3: animal.collectable = True
     
     def update_status(self):
         dead = 0
@@ -295,10 +312,9 @@ class ChickenBarn(Barn):
     def collect_egg(self):
         egg = 0
         for animal in self.animals:
-            if animal.feeded_days > 3:
+            if animal.collectable == True:
                 egg += 1
-                if animal.feeded == True: animal.feeded_days = 1
-                else: animal.feeded_days = 0
+                animal.collectable = False
         inventory.list['Egg']['quantity'] += egg
         return egg
 # === End of Chicken Barn Class ===
@@ -328,10 +344,9 @@ class CowBarn(Barn):
     def collect_milk(self):
         milk = 0
         for animal in self.animals:
-            if animal.feeded_days > 3:
+            if animal.collectable == True:
                 milk += 1
-                if animal.feeded == True: animal.feeded_days = 1
-                else: animal.feeded_days = 0
+                animal.collectable = False
         inventory.list['Milk']['quantity'] += milk
         return milk
 # === End of Cow Barn Class ===
@@ -344,6 +359,7 @@ class Chicken:
         self.health = 100
         self.feeded = False
         self.feeded_days = 0
+        self.collectable = False
 # === End of Chicken Class ===
 
 # === Start of Cow Class ===
@@ -354,6 +370,7 @@ class Cow:
         self.health = 100
         self.feeded = False
         self.feeded_days = 0
+        self.collectable = False
 # === End of Cow Class ===
 
 # === Start of Market Item Class ===
@@ -421,6 +438,8 @@ class Buy:
             count += 1
             print(f'> {count}. {item['icon']} {item_name}: {item['price']} 🪙')
         
+        print(f'> {count + 1}. Back to Main Menu 👈')
+        
         print('-' * 80)
         return count
     
@@ -438,6 +457,7 @@ class Buy:
                     return
                 
                 inventory.list['Coin']['quantity'] -= quantity * item['price']
+                stats.financial[stats.day]['Expense'] += quantity * item['price']
                 
                 if item_name == 'Chicken' or item_name == 'Cow':
                     for i in range(quantity): buy_animal(item_name)
@@ -456,7 +476,94 @@ class Buy:
 
 # === Start of Sell (Market) Class ===
 class Sell:
-    pass
+    def __init__(self):
+        self.list = {
+            'Corn': {
+                'icon': '🌽',
+                'price': random.randint(15, 40),
+                'unlocked': True
+            },
+            'Potato': {
+                'icon': '🥔',
+                'price': random.randint(25, 50),
+                'unlocked': False
+            },
+            'Tomato': {
+                'icon': '🍅',
+                'price': random.randint(40, 80),
+                'unlocked': False
+            },
+            'Carrot': {
+                'icon': '🥕',
+                'price': random.randint(25, 50),
+                'unlocked': False
+            },
+            'Egg': {
+                'icon': '🥚',
+                'price': random.randint(15, 30),
+                'unlocked': True
+            },
+            'Milk': {
+                'icon': '🥛',
+                'price': random.randint(25, 40),
+                'unlocked': False
+            }
+        }
+    
+    def update_prices(self):
+        self.list['Corn']['price'] = random.randint(15, 40)
+        self.list['Potato']['price'] = random.randint(25, 50)
+        self.list['Tomato']['price'] = random.randint(40, 80)
+        self.list['Carrot']['price'] = random.randint(25, 50)
+        self.list['Egg']['price'] = random.randint(15, 30)
+        self.list['Milk']['price'] = random.randint(25, 40)
+
+    def show_items(self):
+        print('-' * 80)
+        print(f'{'🏪 Sell Item 🏪':^80}')
+        print('-' * 80)
+
+        print("> 🌽 Today's pricelist:")
+        print('-' * 80)
+
+        count = 0
+        for item_name in self.list:
+            item = self.list[item_name]
+            if item['unlocked'] == False: continue
+            count += 1
+            print(f'> {count}. {item['icon']} {item_name}: {item['price']} 🪙')
+        
+        print(f'> {count + 1}. Back to Main Menu 👈')
+        
+        print('-' * 80)
+        return count
+    
+    def sell_item(self, index, quantity):
+        count = 0
+        for item_name in self.list:
+            item = self.list[item_name]
+            if item['unlocked'] == False: continue
+            
+            count += 1
+            
+            if count == index:
+                if quantity > inventory.list[item_name]['quantity']:
+                    print("> ❗ You don't have enough of this item! You can try to sell less.\n")
+                    return
+                
+                inventory.list[item_name]['quantity'] -= quantity
+                inventory.list['Coin']['quantity'] += quantity * item['price']
+                stats.financial[stats.day]['Profit'] += quantity * item['price']
+
+                print('-' * 80)
+                print(f'> 🪙 You have sold {quantity} {item_name}!')
+                print(f'> 🪙 You received {quantity * item['price']} coins.')
+                print('-' * 80)
+
+                return
+        
+        print('> ❗ Invalid option!\n')
+        return
 # === End of Sell (Market) Class ===
 
 # User Instances
@@ -861,12 +968,16 @@ def market_buy_menu():
 
             choice = int(choice)
 
-            if choice < 1 or choice > itemCount: raise ValueError('> ❗ Invalid item code!\n')
+            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!\n')
 
             valid = True
 
         except ValueError as e:
             print(str(e))
+    
+    if choice == itemCount + 1:
+        print('-' * 80)
+        return
     
     valid = False
 
@@ -890,7 +1001,48 @@ def market_buy_menu():
 
 # === Start of Market Sell Menu ===
 def market_sell_menu():
-    pass
+    itemCount = market.sell.show_items()
+
+    valid = False
+
+    while valid is False:
+        choice = input('> Enter item code that you want to sell: ')
+
+        try:
+            if choice == '': raise ValueError('> ❗ Item code may not be empty!\n')
+            if not choice.isnumeric(): raise ValueError('> ❗ Item code must be a number!\n')
+
+            choice = int(choice)
+
+            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!\n')
+
+            valid = True
+
+        except ValueError as e:
+            print(str(e))
+    
+    if choice == itemCount + 1:
+        print('-' * 80)
+        return
+    
+    valid = False
+
+    while valid is False:
+        quantity = input('> Enter quantity: ')
+
+        try:
+            if quantity == '': raise ValueError('> ❗ Quantity may not be empty!\n')    
+            if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!\n')
+
+            quantity = int(quantity)
+            if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!\n')
+
+            valid = True
+
+        except ValueError as e:
+            print(str(e))
+    
+    market.sell.sell_item(choice, quantity)
 # === End of Market Sell Menu ===
 
 # === Start of Show Inventory Function ===
@@ -908,13 +1060,18 @@ def statistics():
     print(f'{'📊 Statistics 📊':^80}')
     print('-' * 80)
     
-    print(f'> 🌞 You have reached Day {stats.day}')
-    print(f'> 🪙 You currently have {inventory.list['Coin']['quantity']} coins.')
-    print(f'> 🌽 The size of your farm is now {farm.size} x {farm.size}.')
-    print(f'> 🐔 You own {len(chicken_barn.animals)} chicken(s).')
-    print(f'> 🐄 You own {len(cow_barn.animals)} cow(s).')
+    print(f'> 📅 Day: {stats.day}')
+    print(f'> 🪙 Coins: {inventory.list['Coin']['quantity']}')
+    print()
 
+    print('> 💰 Financial State:')
     print('-' * 80)
+    for day in stats.financial:
+        data = stats.financial[day]
+        print(f'🌞 Day {day}')
+        print(f'🟩 Profit: {data['Profit']}')
+        print(f'🟥 Expense: {data['Expense']}')
+        print('-' * 80)
 # === End of Statistics Menu ===
 
 if __name__ == '__main__':
