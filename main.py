@@ -35,11 +35,12 @@ class UserStats:
 
             return
         
-        if self.day == 6:
+        if self.day == 5:
             market_items.list['Cow']['unlocked'] = True
-            market.sell.list['Cow']['unlocked'] = True
+            market_items.list['Cow Feed']['unlocked'] = True
+            market.sell.list['Milk']['unlocked'] = True
 
-            print('> 🥳 Congratulations! You have reached Day 6.')
+            print('> 🥳 Congratulations! You have reached Day 5.')
             print('> 🐮 Cow is now unlocked. You can buy them at the market.')
             print('-' * 80)
 
@@ -51,7 +52,7 @@ class UserStats:
             market_items.list['Tomato Seed']['unlocked'] = True
             market.sell.list['Tomato']['unlocked'] = True
 
-            print('> 🥳 Congratulations! You have got more than 1100 🪙.')
+            print('> 🥳 Congratulations! You have got more than 1100 🪙')
             print('> 😄 For this achievement, you will receive Tomato Seed!')
             print('> 🍅 Tomato Seed is now unlocked. You received 5 tomato seeds.')
             print('-' * 80)
@@ -133,6 +134,16 @@ class Inventory:
             'Milk': {
                 'quantity': 0,
                 'icon': '🥛',
+                'type': 'product'
+            },
+            'Chicken Feed': {
+                'quantity': 0,
+                'icon': '🫘',
+                'type': 'product'
+            },
+            'Cow Feed': {
+                'quantity': 0,
+                'icon': '🌾',
                 'type': 'product'
             }
         }
@@ -287,12 +298,22 @@ class Barn:
         return dead
 # === End of Barn Class ===
 
+# === Start of Template Pattern ===
+class TemplatePattern:
+    def startingText(self): pass
+    def animalList(self): pass
+
+    def show_animals(self):
+        self.startingText()
+        self.animalList()
+# === End of Template Pattern ===
+
 # === Start of Chicken Barn Class ===
-class ChickenBarn(Barn):
+class ChickenBarn(Barn, TemplatePattern):
     def __init__(self):
         super().__init__()
     
-    def show_chickens(self):
+    def startingText(self):
         if len(self.animals) == 0:
             print('> 🐔 There are no chickens in the chicken barn...')
             print('-' * 80)
@@ -300,9 +321,14 @@ class ChickenBarn(Barn):
         
         print('> 🐔 List of chickens in the chicken barn:')
         print('-' * 80)
-
+        return
+    
+    def animalList(self):
+        count = 0
         for animal in self.animals:
-            print(f'> 🐤 Name: {animal.name}')
+            count += 1
+            print(f'Chicken {count}')
+            print(f'> 🐔 Name: {animal.name}')
             print(f'> ⏳ Age: {animal.age}')
             print(f'> ❤️ Health: {animal.health}')
             print(f'> 🍚 Feeded Today: {'Yes' if animal.feeded == True else 'No'}')
@@ -320,11 +346,11 @@ class ChickenBarn(Barn):
 # === End of Chicken Barn Class ===
 
 # === Start of Cow Barn Class ===
-class CowBarn(Barn):
+class CowBarn(Barn, TemplatePattern):
     def __init__(self):
         super().__init__()
     
-    def show_cows(self):
+    def startingText(self):
         if len(self.animals) == 0:
             print('> 🐄 There are no cows in the cow barn...')
             print('-' * 80)
@@ -332,8 +358,13 @@ class CowBarn(Barn):
         
         print('> 🐄 List of cows in the cow barn:')
         print('-' * 80)
-
+        return
+    
+    def animalList(self):
+        count = 0
         for animal in self.animals:
+            count += 1
+            print(f'Cow {count}')
             print(f'> 🐮 Name: {animal.name}')
             print(f'> ⏳ Age: {animal.age}')
             print(f'> ❤️ Health: {animal.health}')
@@ -405,6 +436,16 @@ class MarketItems:
             'Cow': {
                 'icon': '🐄',
                 'price': 180,
+                'unlocked': False
+            },
+            'Chicken Feed': {
+                'icon': '🫘',
+                'price': 15,
+                'unlocked': True
+            },
+            'Cow Feed': {
+                'icon': '🌾',
+                'price': 20,
                 'unlocked': False
             }
         }
@@ -783,13 +824,14 @@ def chicken_barn_menu():
     print(f'{'🐔 Chicken Barn 🐔':^80}')
     print('-' * 80)
 
-    chicken_barn.show_chickens()
+    chicken_barn.show_animals()
 
     if len(chicken_barn.animals) == 0: return
 
     print('1. Feed Chicken 🍚')
     print('2. Collect Egg 🥚')
-    print('3. Go back to Main Menu 👈')
+    print('3. Make Chicken Feed 🫘')
+    print('4. Go back to Main Menu 👈')
 
     print('-' * 80)
 
@@ -798,23 +840,86 @@ def chicken_barn_menu():
     while valid is False:
         choice = input('> Enter menu number: ')
         try:
-            if choice not in ['1', '2', '3']:
+            if choice not in ['1', '2', '3', '4']:
                 raise ValueError('> ❗ Invalid option!\n')
             valid = True
         except ValueError as e:
             print(str(e))
     
     if choice == '1':
-        chicken_barn.feed_animals()
+
         print('-' * 80)
-        print('> 🍚 Chicken feeded!')
+        print(f'> 🫘 You have {inventory.list['Chicken Feed']['quantity']} Chicken Feed.')
         print('-' * 80)
+
+        valid = False
+
+        while valid == False:
+            choice = input('> 🍚 Do you want to feed all the chickens? (y/n): ').lower()
+
+            try:
+                if choice == '': raise ValueError('> ❗ Choice may not be empty!\n')
+                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!\n')
+                valid = True
+            except ValueError as e:
+                print(str(e))
+        
+        if choice == 'n':
+            print('-' * 80)
+            return
+        elif choice == 'y':
+            if inventory.list['Chicken Feed']['quantity'] < len(chicken_barn.animals):
+                print("> ❌ You don't have enough Chicken Feed to feed all the chickens...")
+                print('-' * 80)
+                return
+            
+            chicken_barn.feed_animals()
+            inventory.list['Chicken Feed']['quantity'] -= len(chicken_barn.animals)
+            print('> 🍚 You fed all the chickens!')
+            print('-' * 80)
+            return
+
     elif choice == '2':
+
         egg = chicken_barn.collect_egg()
         print('-' * 80)
         if egg == 0: print('> 🥚 There are no eggs that are ready to be collected...')
         else: print(f'> 🥚 You collected {egg} eggs!')
         print('-' * 80)
+
+    elif choice == '3':
+
+        print('-' * 80)
+        print('> 1 🌽 -> 3 🫘')
+        
+        if inventory.list['Corn']['quantity'] == 0:
+            print("> ❌ You don't have enough Corn to make Chicken Feed...")
+            print('-' * 80)
+            return
+        
+        print(f'> 🌽 You have {inventory.list["Corn"]["quantity"]} Corn.\n')
+
+        valid = False
+
+        while valid == False:
+            quantity = input('> 🌽 How many Corn do you want to use? ')
+            try:
+                if quantity == '': raise ValueError('> ❗ Quantity may not be empty!\n')
+                if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!\n')
+                quantity = int(quantity)
+                if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!\n')
+                if quantity > inventory.list['Corn']['quantity']: raise ValueError('> ❗ You don\'t have enough Corn!\n')               
+                valid = True           
+            except ValueError as e:
+                print(str(e))
+        
+        inventory.list['Corn']['quantity'] -= quantity
+        inventory.list['Chicken Feed']['quantity'] += quantity * 3
+
+        print('-' * 80)
+        print(f'> 🫘 You made {quantity * 3} Chicken Feed!')
+        print('-' * 80)
+
     else:
         print('-' * 80)
         return
@@ -826,11 +931,11 @@ def cow_barn_menu():
     print(f'{'🐮 Cow Barn 🐮':^80}')
     print('-' * 80)
 
-    cow_barn.show_cows()
+    cow_barn.show_animals()
 
     if len(cow_barn.animals) == 0: return
 
-    print('1. Feed Cow 🍚')
+    print('1. Feed Cow 🌾')
     print('2. Collect Milk 🥛')
     print('3. Go back to Main Menu 👈')
 
@@ -848,16 +953,46 @@ def cow_barn_menu():
             print(str(e))
     
     if choice == '1':
-        cow_barn.feed_animals()
+
         print('-' * 80)
-        print('> 🍚 Cow feeded!')
+        print(f'> 🌾 You have {inventory.list['Cow Feed']['quantity']} Cow Feed.')
         print('-' * 80)
+
+        valid = False
+
+        while valid == False:
+            choice = input('> 🍚 Do you want to feed all the cows? (y/n): ').lower()
+
+            try:
+                if choice == '': raise ValueError('> ❗ Choice may not be empty!\n')
+                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!\n')
+                valid = True
+            except ValueError as e:
+                print(str(e))
+        
+        if choice == 'n':
+            print('-' * 80)
+            return
+        elif choice == 'y':
+            if inventory.list['Cow Feed']['quantity'] < len(cow_barn.animals):
+                print("> ❌ You don't have enough Cow Feed to feed all the cows...")
+                print('-' * 80)
+                return
+            
+            cow_barn.feed_animals()
+            inventory.list['Cow Feed']['quantity'] -= len(cow_barn.animals)
+            print('> 🍚 You fed all the cows!')
+            print('-' * 80)
+            return
+
     elif choice == '2':
+
         milk = cow_barn.collect_milk()
         print('-' * 80)
         if milk == 0: print('> 🥛 There are no milk that are ready to be collected...')
         else: print(f'> 🥛 You collected {milk} milk!')
         print('-' * 80)
+
     else:
         print('-' * 80)
         return
