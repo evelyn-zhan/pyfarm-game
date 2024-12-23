@@ -285,6 +285,16 @@ class Barn:
             else: animal.health = 100
             if animal.feeded_days >= 3: animal.collectable = True
     
+    def feed_some(self, feed_list):
+        for number in feed_list:
+            number -= 1
+            if self.animals[number].feeded == True: continue
+            self.animals[number].feeded = True
+            self.animals[number].feeded_days += 1
+            if self.animals[number].health + 10 <= 100: self.animals[number].health += 10
+            else: self.animals[number].health = 100
+            if self.animals[number].feeded_days >= 3: self.animals[number].collectable = True
+    
     def update_status(self):
         dead = 0
         for animal in self.animals:
@@ -679,8 +689,8 @@ def farm_plant_menu():
     while valid is False:
         choice = input('> ❓ Do you want to plant any seed? (y/n): ').lower()
         try:
-            if choice == '': raise ValueError('> ❗ Choice may not be empty!\n')
-            if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!\n')
+            if choice == '': raise ValueError('> ❗ Choice may not be empty!')
+            if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!')
             valid = True
         except ValueError as e:
             print(str(e))
@@ -693,12 +703,12 @@ def farm_plant_menu():
     while valid is False:
         seed_code = input('> 🌱 Enter seed code number: ')
         try:
-            if seed_code == '': raise ValueError('> ❗ Seed code may not be empty!\n')
-            if not seed_code.isnumeric(): raise ValueError('> ❗ Seed code must be a number!\n')
+            if seed_code == '': raise ValueError('> ❗ Seed code may not be empty!')
+            if not seed_code.isnumeric(): raise ValueError('> ❗ Seed code must be a number!')
 
             seed_code = int(seed_code)
 
-            if seed_code < 1 or seed_code > seeds.count(): raise ValueError('> ❗ Invalid seed code!\n')
+            if seed_code < 1 or seed_code > seeds.count(): raise ValueError('> ❗ Invalid seed code!')
 
             if seed_code == 1: seed_name = 'Corn Seed'
             elif seed_code == 2: seed_name = 'Potato Seed'
@@ -718,10 +728,10 @@ def farm_plant_menu():
     while valid is False:
         row = input('> 🌱 Enter row number: ')
         try:
-            if row == '': raise ValueError('> ❗ Row number may not be empty!\n')
-            if not row.isnumeric(): raise ValueError('> ❗ Row number must be a number!\n')
+            if row == '': raise ValueError('> ❗ Row number may not be empty!')
+            if not row.isnumeric(): raise ValueError('> ❗ Row number must be a number!')
             row = int(row)
-            if row < 1 or row > farm.size: raise ValueError('> ❗ Invalid row number!\n')
+            if row < 1 or row > farm.size: raise ValueError('> ❗ Invalid row number!')
             row -= 1
             valid = True
         except ValueError as e:
@@ -733,10 +743,10 @@ def farm_plant_menu():
     while valid is False:
         col = input('> 🌱 Enter column number: ')
         try:
-            if col == '': raise ValueError('> ❗ Column number may not be empty!\n')
-            if not col.isnumeric(): raise ValueError('> ❗ Column number must be a number!\n')
+            if col == '': raise ValueError('> ❗ Column number may not be empty!')
+            if not col.isnumeric(): raise ValueError('> ❗ Column number must be a number!')
             col = int(col)
-            if col < 1 or col > farm.size: raise ValueError('> ❗ Invalid column number!\n')
+            if col < 1 or col > farm.size: raise ValueError('> ❗ Invalid column number!')
             col -= 1
             valid = True
         except ValueError as e:
@@ -841,7 +851,7 @@ def chicken_barn_menu():
         choice = input('> Enter menu number: ')
         try:
             if choice not in ['1', '2', '3', '4']:
-                raise ValueError('> ❗ Invalid option!\n')
+                raise ValueError('> ❗ Invalid option!')
             valid = True
         except ValueError as e:
             print(str(e))
@@ -855,27 +865,53 @@ def chicken_barn_menu():
         valid = False
 
         while valid == False:
-            choice = input('> 🍚 Do you want to feed all the chickens? (y/n): ').lower()
-
+            choice = input('> 🍚 Do you want to feed all the chicken(s)? (y/n): ').lower()
             try:
-                if choice == '': raise ValueError('> ❗ Choice may not be empty!\n')
-                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!\n')
+                if choice == '': raise ValueError('> ❗ Choice may not be empty!')
+                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!')
                 valid = True
             except ValueError as e:
                 print(str(e))
         
-        if choice == 'n':
-            print('-' * 80)
-            return
-        elif choice == 'y':
+        if choice == 'y':
+
             if inventory.list['Chicken Feed']['quantity'] < len(chicken_barn.animals):
-                print("> ❌ You don't have enough Chicken Feed to feed all the chickens...")
+                print("> ❌ You don't have enough Chicken Feed to feed all the chicken(s)...")
                 print('-' * 80)
                 return
             
             chicken_barn.feed_animals()
             inventory.list['Chicken Feed']['quantity'] -= len(chicken_barn.animals)
-            print('> 🍚 You fed all the chickens!')
+            print('> 🍚 You fed all the chicken(s)!')
+            print('-' * 80)
+            return
+        
+        elif choice == 'n':
+
+            valid = False
+
+            while valid == False:
+                numbers = list(map(str, input('> 🍚 Enter the number code of the chicken(s) that you want to feed (ex. 1 2 5): ').split()))
+                try:
+                    for number in numbers:
+                        if not number.isnumeric(): raise ValueError('> ❗ Number code must be a number!')
+                        number = int(number)
+                        if number < 1 or number > len(chicken_barn.animals): raise ValueError('> ❗ There is invalid number code!')
+                    valid = True
+                except ValueError as e:
+                    print(str(e))
+            
+            if inventory.list['Chicken Feed']['quantity'] < len(numbers):
+                print("> ❌ You don't have enough Chicken Feed to feed all the chicken(s)...")
+                print('-' * 80)
+                return
+            
+            numbers = list(map(int, numbers))
+
+            chicken_barn.feed_some(numbers)
+            inventory.list['Chicken Feed']['quantity'] -= len(numbers)
+
+            print('> 🍚 You fed the chicken(s)!')
             print('-' * 80)
             return
 
@@ -884,7 +920,7 @@ def chicken_barn_menu():
         egg = chicken_barn.collect_egg()
         print('-' * 80)
         if egg == 0: print('> 🥚 There are no eggs that are ready to be collected...')
-        else: print(f'> 🥚 You collected {egg} eggs!')
+        else: print(f'> 🥚 You collected {egg} Egg!')
         print('-' * 80)
 
     elif choice == '3':
@@ -904,11 +940,11 @@ def chicken_barn_menu():
         while valid == False:
             quantity = input('> 🌽 How many Corn do you want to use? ')
             try:
-                if quantity == '': raise ValueError('> ❗ Quantity may not be empty!\n')
-                if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!\n')
+                if quantity == '': raise ValueError('> ❗ Quantity may not be empty!')
+                if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!')
                 quantity = int(quantity)
-                if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!\n')
-                if quantity > inventory.list['Corn']['quantity']: raise ValueError('> ❗ You don\'t have enough Corn!\n')               
+                if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!')
+                if quantity > inventory.list['Corn']['quantity']: raise ValueError("> ❗ You don't have enough Corn!")               
                 valid = True           
             except ValueError as e:
                 print(str(e))
@@ -947,7 +983,7 @@ def cow_barn_menu():
         choice = input('> Enter menu number: ')
         try:
             if choice not in ['1', '2', '3']:
-                raise ValueError('> ❗ Invalid option!\n')
+                raise ValueError('> ❗ Invalid option!')
             valid = True
         except ValueError as e:
             print(str(e))
@@ -962,18 +998,15 @@ def cow_barn_menu():
 
         while valid == False:
             choice = input('> 🍚 Do you want to feed all the cows? (y/n): ').lower()
-
             try:
-                if choice == '': raise ValueError('> ❗ Choice may not be empty!\n')
-                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!\n')
+                if choice == '': raise ValueError('> ❗ Choice may not be empty!')
+                if choice not in ['y', 'n']: raise ValueError('> ❗ Invalid option!')
                 valid = True
             except ValueError as e:
                 print(str(e))
         
-        if choice == 'n':
-            print('-' * 80)
-            return
-        elif choice == 'y':
+        if choice == 'y':
+
             if inventory.list['Cow Feed']['quantity'] < len(cow_barn.animals):
                 print("> ❌ You don't have enough Cow Feed to feed all the cows...")
                 print('-' * 80)
@@ -982,6 +1015,35 @@ def cow_barn_menu():
             cow_barn.feed_animals()
             inventory.list['Cow Feed']['quantity'] -= len(cow_barn.animals)
             print('> 🍚 You fed all the cows!')
+            print('-' * 80)
+            return
+        
+        elif choice == 'n':
+
+            valid = False
+
+            while valid == False:
+                numbers = list(map(str, input('> 🍚 Enter the number code of the cow(s) that you want to feed (ex. 1 2 5): ').split()))
+                try:
+                    for number in numbers:
+                        if not number.isnumeric(): raise ValueError('> ❗ Number code must be a number!')
+                        number = int(number)
+                        if number < 1 or number > len(cow_barn.animals): raise ValueError('> ❗ There is invalid number code!')
+                    valid = True
+                except ValueError as e:
+                    print(str(e))
+            
+            if inventory.list['Cow Feed']['quantity'] < len(numbers):
+                print("> ❌ You don't have enough Cow Feed to feed all the cows...")
+                print('-' * 80)
+                return
+            
+            numbers = list(map(int, numbers))
+
+            cow_barn.feed_some(numbers)
+            inventory.list['Cow Feed']['quantity'] -= len(numbers)
+
+            print('> 🍚 You fed the cows!')
             print('-' * 80)
             return
 
@@ -1013,15 +1075,15 @@ def buy_animal(animal):
         name = input(f'> Enter name for {animal}: ')
 
         try:
-            if name == '': raise ValueError('> ❗ Name may not be empty!\n')
+            if name == '': raise ValueError('> ❗ Name may not be empty!')
 
             space = 0
             
             for character in name:
-                if character not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ': raise ValueError('> ❗ Invalid name!\n')
+                if character not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ': raise ValueError('> ❗ Invalid name!')
                 if character == ' ': space += 1
 
-            if space == len(name): raise ValueError('> ❗ Invalid name!\n')
+            if space == len(name): raise ValueError('> ❗ Invalid name!')
 
             valid = True
 
@@ -1074,7 +1136,7 @@ def market_menu():
         choice = input('> Enter menu number: ')
         try:
             if choice not in ['1', '2', '3']:
-                raise ValueError('> ❗ Invalid option!\n')
+                raise ValueError('> ❗ Invalid option!')
             valid = True
         except ValueError as e:
             print(str(e))
@@ -1098,12 +1160,12 @@ def market_buy_menu():
         choice = input('> Enter item code that you want to buy: ')
 
         try:
-            if choice == '': raise ValueError('> ❗ Item code may not be empty!\n')
-            if not choice.isnumeric(): raise ValueError('> ❗ Item code must be a number!\n')
+            if choice == '': raise ValueError('> ❗ Item code may not be empty!')
+            if not choice.isnumeric(): raise ValueError('> ❗ Item code must be a number!')
 
             choice = int(choice)
 
-            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!\n')
+            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!')
 
             valid = True
 
@@ -1120,11 +1182,11 @@ def market_buy_menu():
         quantity = input('> Enter quantity: ')
 
         try:
-            if quantity == '': raise ValueError('> ❗ Quantity may not be empty!\n')    
-            if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!\n')
+            if quantity == '': raise ValueError('> ❗ Quantity may not be empty!')    
+            if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!')
 
             quantity = int(quantity)
-            if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!\n')
+            if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!')
 
             valid = True
 
@@ -1144,12 +1206,12 @@ def market_sell_menu():
         choice = input('> Enter item code that you want to sell: ')
 
         try:
-            if choice == '': raise ValueError('> ❗ Item code may not be empty!\n')
-            if not choice.isnumeric(): raise ValueError('> ❗ Item code must be a number!\n')
+            if choice == '': raise ValueError('> ❗ Item code may not be empty!')
+            if not choice.isnumeric(): raise ValueError('> ❗ Item code must be a number!')
 
             choice = int(choice)
 
-            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!\n')
+            if choice < 1 or choice > itemCount + 1: raise ValueError('> ❗ Invalid item code!')
 
             valid = True
 
@@ -1166,11 +1228,11 @@ def market_sell_menu():
         quantity = input('> Enter quantity: ')
 
         try:
-            if quantity == '': raise ValueError('> ❗ Quantity may not be empty!\n')    
-            if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!\n')
+            if quantity == '': raise ValueError('> ❗ Quantity may not be empty!')    
+            if not quantity.isnumeric(): raise ValueError('> ❗ Quantity must be a number!')
 
             quantity = int(quantity)
-            if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!\n')
+            if quantity < 1: raise ValueError('> ❗ Quantity must be at least 1!')
 
             valid = True
 
