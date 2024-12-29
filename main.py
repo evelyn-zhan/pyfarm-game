@@ -298,6 +298,7 @@ class Barn:
     def update_status(self):
         dead = 0
         for animal in self.animals:
+            animal.age += 1
             if animal.feeded == False:
                 animal.feeded_days = 0
                 if animal.health - 20 >= 0: animal.health -= 20
@@ -339,7 +340,7 @@ class ChickenBarn(Barn, TemplatePattern):
             count += 1
             print(f'Chicken {count}')
             print(f'> 🐔 Name: {animal.name}')
-            print(f'> ⏳ Age: {animal.age}')
+            print(f'> ⏳ Age: {animal.age} {'day' if animal.age <= 1 else 'days'}')
             print(f'> ❤️ Health: {animal.health}')
             print(f'> 🍚 Feeded Today: {'Yes' if animal.feeded == True else 'No'}')
             print(f'> 🍚 Feeded Streak: {animal.feeded_days} day(s)')
@@ -376,7 +377,7 @@ class CowBarn(Barn, TemplatePattern):
             count += 1
             print(f'Cow {count}')
             print(f'> 🐮 Name: {animal.name}')
-            print(f'> ⏳ Age: {animal.age}')
+            print(f'> ⏳ Age: {animal.age} {'day' if animal.age <= 1 else 'days'}')
             print(f'> ❤️ Health: {animal.health}')
             print(f'> 🍚 Feeded Today: {'Yes' if animal.feeded == True else 'No'}')
             print(f'> 🍚 Feeded Streak: {animal.feeded_days} day(s)')
