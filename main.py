@@ -297,15 +297,17 @@ class Barn:
     
     def update_status(self):
         dead = 0
+        alive = []
         for animal in self.animals:
             animal.age += 1
             if animal.feeded == False:
                 animal.feeded_days = 0
-                if animal.health - 20 >= 0: animal.health -= 20
-                else:
-                    self.animals.remove(animal)
-                    dead += 1
+                if animal.health - 30 > 0:
+                    animal.health -= 30
+                    alive.append(animal)
+                else: dead += 1
             else: animal.feeded = False
+        self.animals = alive
         return dead
 # === End of Barn Class ===
 
