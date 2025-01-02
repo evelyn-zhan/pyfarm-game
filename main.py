@@ -306,7 +306,8 @@ class Barn:
                     animal.health -= 30
                     alive.append(animal)
                 else: dead += 1
-            else: animal.feeded = False
+            else: alive.append(animal)
+            animal.feeded = False
         self.animals = alive
         return dead
 # === End of Barn Class ===
